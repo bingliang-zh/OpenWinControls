@@ -17,16 +17,11 @@
  */
 #pragma once
 
-#include <QKeyEvent>
-
 #include "FaceButtonsPage.h"
 
 namespace OWC {
     class KeyboardMouseButtonsPage final: public FaceButtonsPage {
         Q_OBJECT
-
-    protected:
-        void keyPressEvent(QKeyEvent *event) override;
 
     public:
         KeyboardMouseButtonsPage();

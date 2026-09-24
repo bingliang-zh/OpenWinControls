@@ -6,6 +6,8 @@ set(PROJECT_AUTHOR "kylon")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(OWC_BUILD_TESTS "Build OpenWinControls tests" OFF)
+
 find_package(Qt6 6.10 REQUIRED COMPONENTS Core Widgets Network)
 
 qt_standard_project_setup()
@@ -130,3 +132,34 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
+if (OWC_BUILD_TESTS)
+  enable_testing()
+  find_package(Qt6 6.10 REQUIRED COMPONENTS Test)
+
+  qt_add_executable(KeyAssignmentE2ETest
+    ${QT_RESOURCE}
+    tests/KeyAssignmentE2ETest.cpp
+    src/pages/faceButtons/Widgets/ButtonBlockWidget.h
+    src/pages/faceButtons/Widgets/DirectionalButtonBlockWidget.cpp
+    src/pages/faceButtons/Widgets/ShoulderButtonBlockWidget.cpp
+    src/pages/faceButtons/Widgets/SingleButtonBlockWidget.cpp
+    src/pages/faceButtons/FaceButtonsPage.cpp
+    src/pages/faceButtons/KeyboardMouseButtonsPage.cpp
+    src/pages/faceButtons/XinputButtonsPage.cpp
+    src/pages/backButtons/Widgets/BackButtonV1Widget.cpp
+    src/pages/backButtons/Widgets/KeySlotV1Widget.cpp
+    src/pages/backButtons/BackButtonsPage.cpp
+    src/pages/backButtons/BackButtonsV1Page.cpp
+  )
+
+  target_link_libraries(KeyAssignmentE2ETest PRIVATE
+    Qt::Core
+    Qt::Widgets
+    Qt::Test
+    lowc::owc
+    yaml-cpp::yaml-cpp
+  )
+
+  add_test(NAME KeyAssignmentE2E COMMAND KeyAssignmentE2ETest)
+endif ()

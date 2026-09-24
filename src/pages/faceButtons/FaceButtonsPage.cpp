@@ -20,11 +20,14 @@
 #include <QScroller>
 
 #include "FaceButtonsPage.h"
+#include "../../include/ASCIIHIDMap.h"
+#include "../../extern/libOpenWinControls/src/include/HIDUsageIDMap.h"
 
 namespace OWC {
     using namespace Qt::StringLiterals;
 
-    FaceButtonsPage::FaceButtonsPage() {
+    FaceButtonsPage::FaceButtonsPage(const bool acceptsKeyboardAssignments):
+        acceptsKeyboardAssignments(acceptsKeyboardAssignments) {
         QVBoxLayout *lyt = new QVBoxLayout();
         QHBoxLayout *buttonsLyt = new QHBoxLayout();
         QScrollArea *scrollArea = new QScrollArea();
@@ -82,12 +85,13 @@ namespace OWC {
             btn->importMappingFromYaml(yaml);
     }
 
-    void FaceButtonsPage::setPendingButton(const QString &key) const {
+    void FaceButtonsPage::setPendingButton(const QString &key) {
         if (pendingBtn == nullptr)
             return;
 
         pendingBtn->setText(key);
         pendingBtn = nullptr;
+        releaseKeyboard();
     }
 
     void FaceButtonsPage::onBackBtnClicked() {
@@ -102,12 +106,55 @@ namespace OWC {
         emit logSent(msg);
     }
 
-    void FaceButtonsPage::onkeyButtonPressed(QPushButton *btn) const {
+    void FaceButtonsPage::keyPressEvent(QKeyEvent *event) {
+        if (pendingBtn == nullptr) {
+            QWidget::keyPressEvent(event);
+            return;
+        }
+
+        // XInput mappings only accept X_* values. Keep keyboard events from
+        // changing focus while an XInput button is waiting for controller input.
+        if (!acceptsKeyboardAssignments) {
+            event->accept();
+            return;
+        }
+
+        const Qt::Key kc = static_cast<Qt::Key>(event->key());
+
+        if (!ASCIIHIDMap.contains(kc)) {
+            emit logSent(QString("unknown scan code: %1").arg(kc));
+            return;
+        }
+
+        if (!HIDUsageIDMap.contains(ASCIIHIDMap[kc])) {
+            emit logSent(QString("unknown hid code: %1").arg(kc));
+            return;
+        }
+
+        pendingBtn->setText(QString::fromStdString(HIDUsageIDMap.at(ASCIIHIDMap[kc])));
+        pendingBtn = nullptr;
+        releaseKeyboard();
+    }
+
+    void FaceButtonsPage::hideEvent(QHideEvent *event) {
+        QWidget::hideEvent(event);
+        releaseKeyboard();
+    }
+
+    void FaceButtonsPage::showEvent(QShowEvent *event) {
+        QWidget::showEvent(event);
+
+        if (pendingBtn != nullptr)
+            grabKeyboard();
+    }
+
+    void FaceButtonsPage::onkeyButtonPressed(QPushButton *btn) {
         if (pendingBtn != nullptr) {
             pendingBtn->setText(oldPendingBtnText);
 
             if (pendingBtn == btn) { // cancel edit
                 pendingBtn = nullptr;
+                releaseKeyboard();
                 return;
             }
         }
@@ -116,5 +163,6 @@ namespace OWC {
         oldPendingBtnText = pendingBtn->text();
 
         pendingBtn->setText(u"..."_s);
+        grabKeyboard();
     }
 }

@@ -19,6 +19,8 @@
 
 #include <QVBoxLayout>
 #include <QKeyEvent>
+#include <QHideEvent>
+#include <QShowEvent>
 #include <QPushButton>
 
 #include "../../extern/libOpenWinControls/src/controller/Controller.h"
@@ -36,13 +38,15 @@ namespace OWC {
         QHBoxLayout *backBtnLyt = nullptr;
 
         void keyPressEvent(QKeyEvent *event) override;
+        void hideEvent(QHideEvent *event) override;
+        void showEvent(QShowEvent *event) override;
 
     public:
         explicit BackButtonsPage(const QString &helpLbl);
 
         virtual void initPage(const QSharedPointer<Controller> &gpd) {}
 
-        void setPendingButton(const QString &key) const;
+        void setPendingButton(const QString &key);
         virtual void setMapping(const QSharedPointer<Controller> &gpd) const = 0;
         virtual void writeMapping(const QSharedPointer<Controller> &gpd) = 0;
         [[nodiscard]] virtual QString exportMappingToYaml() const = 0;
@@ -54,7 +58,7 @@ namespace OWC {
         void onCharMapBtnClicked();
 
     protected slots:
-        void onkeyButtonPressed(QPushButton *btn) const;
+        void onkeyButtonPressed(QPushButton *btn);
 
     signals:
         void backToHome();

@@ -18,6 +18,8 @@
 #pragma once
 
 #include <QVBoxLayout>
+#include <QShowEvent>
+#include <QKeyEvent>
 
 #include "Widgets/ButtonBlockWidget.h"
 #include "../../extern/libOpenWinControls/src/controller/Controller.h"
@@ -29,6 +31,7 @@ namespace OWC {
 
     private:
         mutable QString oldPendingBtnText; // text backup to restore on cancel
+        const bool acceptsKeyboardAssignments;
 
     protected:
         QVBoxLayout *controlsLyt = nullptr;
@@ -36,13 +39,18 @@ namespace OWC {
         QList<ButtonBlockWidget *> buttonList;
 
     public:
-        FaceButtonsPage();
+        explicit FaceButtonsPage(bool acceptsKeyboardAssignments);
 
         void setMapping(const QSharedPointer<Controller> &gpd) const;
         void writeMapping(const QSharedPointer<Controller> &gpd);
         [[nodiscard]] QString exportMappingToYaml() const;
         void importMappingFromYaml(const YAML::Node &yaml) const;
-        void setPendingButton(const QString &key) const;
+        void setPendingButton(const QString &key);
+
+    protected:
+        void keyPressEvent(QKeyEvent *event) override;
+        void hideEvent(QHideEvent *event) override;
+        void showEvent(QShowEvent *event) override;
 
     private slots:
         void onBackBtnClicked();
@@ -51,7 +59,7 @@ namespace OWC {
     protected slots:
         virtual void onResetBtnClicked() = 0;
         void onLogSent(const QString &msg);
-        void onkeyButtonPressed(QPushButton *btn) const;
+        void onkeyButtonPressed(QPushButton *btn);
 
     signals:
         void backToHome();

@@ -25,7 +25,7 @@
 namespace OWC {
     using namespace Qt::StringLiterals;
 
-    KeyboardMouseButtonsPage::KeyboardMouseButtonsPage() {
+    KeyboardMouseButtonsPage::KeyboardMouseButtonsPage(): FaceButtonsPage(true) {
         QHBoxLayout *row1Lyt = new QHBoxLayout();
         QHBoxLayout *row2Lyt = new QHBoxLayout();
         DirectionalButtonBlockWidget *dpad;
@@ -93,26 +93,6 @@ namespace OWC {
         QObject::connect(select, &SingleButtonBlockWidget::pendingEditBtn, this, &KeyboardMouseButtonsPage::onkeyButtonPressed);
         QObject::connect(menu, &SingleButtonBlockWidget::logSent, this, &KeyboardMouseButtonsPage::onLogSent);
         QObject::connect(menu, &SingleButtonBlockWidget::pendingEditBtn, this, &KeyboardMouseButtonsPage::onkeyButtonPressed);
-    }
-
-    void KeyboardMouseButtonsPage::keyPressEvent(QKeyEvent *event) {
-        if (pendingBtn == nullptr)
-            return;
-
-        const Qt::Key kc = static_cast<Qt::Key>(event->key());
-
-        if (!ASCIIHIDMap.contains(kc)) {
-            emit logSent(QString("unknown scan code: %1").arg(kc));
-            return;
-        }
-
-        if (!HIDUsageIDMap.contains(ASCIIHIDMap[kc])) {
-            emit logSent(QString("unknown hid code: %1").arg(kc));
-            return;
-        }
-
-        pendingBtn->setText(QString::fromStdString(HIDUsageIDMap.at(ASCIIHIDMap[kc])));
-        pendingBtn = nullptr;
     }
 
     void KeyboardMouseButtonsPage::onResetBtnClicked() {

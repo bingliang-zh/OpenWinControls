@@ -23,7 +23,7 @@
 namespace OWC {
     using namespace Qt::StringLiterals;
 
-    XinputButtonsPage::XinputButtonsPage() {
+    XinputButtonsPage::XinputButtonsPage(): FaceButtonsPage(false) {
         QHBoxLayout *row1Lyt = new QHBoxLayout();
         QHBoxLayout *row2Lyt = new QHBoxLayout();
         QHBoxLayout *row3Lyt = new QHBoxLayout();

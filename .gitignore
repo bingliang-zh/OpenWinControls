@@ -57,3 +57,4 @@ src/version.h
 cmake-build*
 .idea/
 win.rc
+build/

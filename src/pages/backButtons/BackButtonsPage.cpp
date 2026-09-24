@@ -83,14 +83,28 @@ namespace OWC {
 
         pendingBtn->setText(QString::fromStdString(HIDUsageIDMap.at(ASCIIHIDMap[kc])));
         pendingBtn = nullptr;
+        releaseKeyboard();
     }
 
-    void BackButtonsPage::setPendingButton(const QString &key) const {
+    void BackButtonsPage::setPendingButton(const QString &key) {
         if (pendingBtn == nullptr)
             return;
 
         pendingBtn->setText(key);
         pendingBtn = nullptr;
+        releaseKeyboard();
+    }
+
+    void BackButtonsPage::hideEvent(QHideEvent *event) {
+        QWidget::hideEvent(event);
+        releaseKeyboard();
+    }
+
+    void BackButtonsPage::showEvent(QShowEvent *event) {
+        QWidget::showEvent(event);
+
+        if (pendingBtn != nullptr)
+            grabKeyboard();
     }
 
     void BackButtonsPage::onBackBtnClicked() {
@@ -105,12 +119,13 @@ namespace OWC {
         emit showCharMap();
     }
 
-    void BackButtonsPage::onkeyButtonPressed(QPushButton *btn) const {
+    void BackButtonsPage::onkeyButtonPressed(QPushButton *btn) {
         if (pendingBtn != nullptr) {
             pendingBtn->setText(oldPendingBtnText);
 
             if (pendingBtn == btn) { // cancel edit
                 pendingBtn = nullptr;
+                releaseKeyboard();
                 return;
             }
         }
@@ -119,5 +134,6 @@ namespace OWC {
         oldPendingBtnText = pendingBtn->text();
 
         pendingBtn->setText(u"..."_s);
+        grabKeyboard();
     }
 }
